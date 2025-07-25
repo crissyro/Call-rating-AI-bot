@@ -10,6 +10,7 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     ##
     # @class Settings
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
     # валидирует их типы и предоставляет удобный и безопасный доступ к ним.
     # Если обязательная переменная отсутствует в .env файле, приложение не запустится
     # и выдаст ошибку, что предотвращает сбои в работе из-за неверной конфигурации.
-    
+
     BOT_TOKEN: SecretStr
     ## @var BOT_TOKEN
     # @brief Секретный токен для доступа к Telegram Bot API.
@@ -35,12 +36,8 @@ class Settings(BaseSettings):
     # через OpenRouter. Это позволяет легко переключаться между моделями
     # и обходить гео-ограничения некоторых провайдеров.
     # @see https://openrouter.ai/keys
-    
-    model_config = SettingsConfigDict(
-        env_file="../.env", 
-        extra="ignore",
-        env_prefix=""  
-    )
+
+    model_config = SettingsConfigDict(env_file="../.env", extra="ignore", env_prefix="")
     ## @var model_config
     # @brief Внутренняя конфигурация для Pydantic-модели `Settings`.
     # @details Определяет, как Pydantic должен загружать и обрабатывать переменные.
@@ -52,6 +49,7 @@ class Settings(BaseSettings):
     #   файле (не описанные в классе `Settings`) будут проигнорированы, а не вызовут ошибку.
     # - <b>env_prefix:</b> Пустой префикс (`""`) означает, что переменные в `.env` файле
     #   должны иметь то же имя, что и поля класса (например, `BOT_TOKEN`, а не `MYAPP_BOT_TOKEN`).
+
 
 ##
 # @var settings

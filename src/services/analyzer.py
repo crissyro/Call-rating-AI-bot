@@ -5,7 +5,7 @@
 # @details Этот модуль содержит класс `CallAnalyzer`, который является "мозгом" бота.
 #          Он инкапсулирует всю логику, связанную с API-запросами к ИИ, обработкой
 #          текста и формированием ответа. Ключевая особенность - использование
-# 
+#
 
 import logging
 
@@ -13,6 +13,7 @@ from openai import AsyncOpenAI
 from config.config import settings
 
 logger = logging.getLogger("call_assessment_bot")
+
 
 class CallAnalyzer:
     """!
@@ -24,7 +25,7 @@ class CallAnalyzer:
     а сам метод отвечает за формирование промпта, вызов модели и обработку ее ответа,
     включая возможные ошибки.
     """
-    
+
     def __init__(self):
         """!
         @brief Конструктор класса `CallAnalyzer`.
@@ -33,16 +34,16 @@ class CallAnalyzer:
         с серверами OpenRouter. Это ключевое решение, позволяющее:
         1.  Обойти гео-блокировки, с которыми можно столкнуться при прямом использовании OpenAI.
         2.  Получить доступ к широкому спектру моделей от разных провайдеров (Google, Anthropic и др.).
-        
+
         Клиент создается один раз при старте приложения, что обеспечивает эффективность.
-        
+
         """
-        
+
         self.client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=settings.OPENROUTER_API_KEY.get_secret_value(),
             default_headers={
-                "HTTP-Referer": "https://github.com/crissyro/Call-rating-AI-bot", 
+                "HTTP-Referer": "https://github.com/crissyro/Call-rating-AI-bot",
                 "X-Title": "Call rating AI bot",
             },
         )
@@ -62,12 +63,12 @@ class CallAnalyzer:
         4.  Перехватывает любые исключения во время API-вызова (например, сетевые ошибки,
             проблемы с ключом), логирует их и возвращает пользователю вежливое
             сообщение об ошибке.
-        
+
         @param transcript [in] Текст расшифровки телефонного разговора для анализа.
         @return Отформатированная строка с тональностью и рекомендациями, готовая
                 к отправке пользователю, либо сообщение об ошибке.
         """
-        
+
         system_prompt = (
             "Ты — опытный ИИ-аналитик колл-центра. Твоя задача — анализировать расшифровки "
             "телефонных разговоров. Внимательно изучи предоставленный диалог. "
@@ -78,28 +79,35 @@ class CallAnalyzer:
             "1. [здесь первая краткая и конкретная рекомендация по улучшению диалога]\n"
             "2. [здесь вторая краткая и конкретная рекомендация]"
         )
-        
+
         try:
             response = await self.client.chat.completions.create(
                 model="google/gemini-flash-1.5",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": transcript}
+                    {"role": "user", "content": transcript},
                 ],
                 temperature=0.4,
                 max_tokens=500,
                 timeout=40.0,
             )
-            
+
             result_text = response.choices[0].message.content.strip()
-            logger.info(f"Successfully received analysis from OpenRouter. Result length: {len(result_text)}")
-            
+            logger.info(
+                f"Successfully received analysis from OpenRouter. Result length: {len(result_text)}"
+            )
+
             return result_text
-        
+
         except Exception as e:
-            logger.error(f"An error occurred during OpenRouter API call: {e}", exc_info=True)
-            return ("⚠️ **Ошибка анализа**\n\n"
-                    "Не удалось связаться с аналитическим сервисом. Пожалуйста, попробуйте снова.")
+            logger.error(
+                f"An error occurred during OpenRouter API call: {e}", exc_info=True
+            )
+            return (
+                "⚠️ **Ошибка анализа**\n\n"
+                "Не удалось связаться с аналитическим сервисом. Пожалуйста, попробуйте снова."
+            )
+
 
 ##
 # @var analyzer

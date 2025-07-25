@@ -15,6 +15,7 @@ from pathlib import Path
 from logging import Formatter, StreamHandler
 from colorlog import ColoredFormatter
 
+
 def setup_logger() -> logging.Logger:
     """!
     @brief Инициализирует и настраивает главный логгер приложения.
@@ -27,7 +28,7 @@ def setup_logger() -> logging.Logger:
     - <b>Файловый обработчик:</b> Записывает логи уровня INFO и выше в файл `logs/bot.log`.
       Это позволяет сохранять важную информацию о работе бота в продакшене,
       исключая отладочные сообщения.
-    
+
     Функция также автоматически создает директорию `logs`, если она не существует.
     @note Эту функцию следует вызывать только один раз при старте приложения (в `main.py`),
           чтобы избежать дублирования обработчиков и многократной записи одних и тех же логов.
@@ -35,38 +36,38 @@ def setup_logger() -> logging.Logger:
           при первом запуске.
     @return logging.Logger: Полностью настроенный экземпляр логгера.
     """
-    
+
     log_dir = Path("logs")
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "bot.log"
-    
+
     logger = logging.getLogger("call_assessment_bot")
     logger.setLevel(logging.DEBUG)
-    
+
     if logger.hasHandlers():
         logger.handlers.clear()
-    
+
     console_format = (
         "%(log_color)s[%(asctime)s] %(blue)s%(name)s:%(reset)s "
         "%(log_color)s%(levelname)s%(reset)s | "
         "%(cyan)s%(funcName)s:%(reset)s %(log_color)s%(message)s"
     )
-    
+
     console_formatter = ColoredFormatter(
         console_format,
         datefmt="%Y-%m-%d %H:%M:%S",
         reset=True,
         log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'bold_red',
-            'CRITICAL': 'bold_purple',
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "bold_red",
+            "CRITICAL": "bold_purple",
         },
         secondary_log_colors={},
-        style='%'
+        style="%",
     )
-    
+
     console_handler = StreamHandler(sys.stdout)
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.DEBUG)
@@ -74,21 +75,22 @@ def setup_logger() -> logging.Logger:
     file_handler = logging.FileHandler(log_file)
     file_formatter = Formatter(
         "[%(asctime)s] %(name)s:%(levelname)s | %(funcName)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.INFO)
-    
+
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
-    
+
     logger.debug("Debug message test")
     logger.info("Info message test")
     logger.warning("Warning message test")
     logger.error("Error message test")
     logger.critical("Critical message test")
-    
+
     return logger
+
 
 class LoggingMiddleware:
     """!
@@ -97,7 +99,7 @@ class LoggingMiddleware:
     @details
     Этот класс является "внешним" middleware (outer middleware), который оборачивает
     обработку каждого входящего события (сообщения, нажатия кнопок и т.д.).
-    
+
     Его задачи:
     1. Логировать информацию о событии и пользователе до того, как оно будет передано
        в соответствующий хендлер.
@@ -107,14 +109,14 @@ class LoggingMiddleware:
     3. В случае ошибки, логировать полную информацию об исключении и отправлять
        пользователю вежливое сообщение о сбое.
     """
-    
+
     def __init__(self, logger):
         """!
         @brief Конструктор middleware.
         @details Принимает экземпляр логгера через механизм внедрения зависимостей.
         @param logger Экземпляр `logging.Logger`, который будет использоваться для записи логов.
         """
-        
+
         self.logger = logger
 
     async def __call__(self, handler, event, data):
@@ -128,21 +130,25 @@ class LoggingMiddleware:
                  так как это сигнализирует диспетчеру, что ошибка была обработана и не
                  нужно ее распространять дальше, что предотвращает остановку бота.
         """
-        
+
         user = data.get("event_from_user")
         user_info = f"{user.id} ({user.username})" if user else "Unknown"
-        
+
         self.logger.info(
             f"Processing {type(event).__name__} from {user_info}",
-            extra={'user': user_info}
+            extra={"user": user_info},
         )
-        
+
         try:
             return await handler(event, data)
         except Exception as e:
-            self.logger.error(f"Error in handler for {type(event).__name__}: {e}", exc_info=True)
-            
+            self.logger.error(
+                f"Error in handler for {type(event).__name__}: {e}", exc_info=True
+            )
+
             if hasattr(event, "answer"):
-                 await event.answer("⚠️ Произошла внутренняя ошибка. Мы уже работаем над этим.")
-                 
+                await event.answer(
+                    "⚠️ Произошла внутренняя ошибка. Мы уже работаем над этим."
+                )
+
             return True
