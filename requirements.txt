@@ -1,0 +1,8 @@
+# requirements.txt
+
+aiogram==3.8.0
+openai==1.35.7
+httpx[http2]>=0.23.0
+distro>=1.8.0
+pydantic-settings==2.3.4
+colorlog==6.8.2

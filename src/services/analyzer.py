@@ -35,13 +35,12 @@ class CallAnalyzer:
         2.  Получить доступ к широкому спектру моделей от разных провайдеров (Google, Anthropic и др.).
         
         Клиент создается один раз при старте приложения, что обеспечивает эффективность.
+        
         """
         
         self.client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
-            
             api_key=settings.OPENROUTER_API_KEY.get_secret_value(),
-            
             default_headers={
                 "HTTP-Referer": "https://github.com/crissyro/Call-rating-AI-bot", 
                 "X-Title": "Call rating AI bot",

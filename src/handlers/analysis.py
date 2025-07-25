@@ -69,7 +69,7 @@ async def handle_text_message(message: types.Message):
         await message.answer("⚠️ Текст слишком короткий. Для качественного анализа нужно минимум 10 слов.")
         return
 
-    processing_msg = await message.answer("🔍 Анализирую диалог... Это может занять до 40 секунд.")
+    processing_msg = await message.answer("🔍 Анализирую диалог... Это может занять до 30 секунд.")
     logger.info(f"Started analysis for user {message.from_user.id}. Text length: {len(message.text)}")
 
     analysis_result = await analyzer.analyze_call(message.text)
