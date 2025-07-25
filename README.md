@@ -63,7 +63,8 @@ OPENROUTER_API_KEY=your_openrouter_api_key_here
 ### 4. Запуск бота:
 
 ```bash
-python3 src/main.py
+cd src
+python3 main.py
 ```
 
 ---
